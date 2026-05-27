@@ -1,0 +1,11 @@
+#!/bin/sh
+
+uci -q batch <<-EOF >/dev/null
+	delete ucitrack.@pushbotx[-1]
+	add ucitrack pushbotx
+	set ucitrack.@pushbotx[-1].init=pushbotx
+	commit ucitrack
+EOF
+
+rm -rf /tmp/luci-*
+exit 0
