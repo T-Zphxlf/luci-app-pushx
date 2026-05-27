@@ -1,36 +1,30 @@
-
-name: Build luci-app-pushbotx-x86
+name: Build luci-app-pushbotx
 
 on:
   repository_dispatch:
   workflow_dispatch:
-    inputs:
-      ssh:
-        description: 'SSH connection to Actions'
-        required: false
-        default: 'false'
+  push:
+    branches:
+      - main
+      - master
 
 env:
-  SDK_URL: https://downloads.openwrt.org/releases/23.05.5/targets/x86/64/openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-  PackageName: luci-app-pushbotx
-  PackageSource_URL: https://github.com/T-Zphxlf/luci-app-pushbotx
-  BandixBackend_URL: https://github.com/timsaya/openwrt-bandix
-  UPLOAD_Package: true
-  UPLOAD_COWTRANSFER: false
-  UPLOAD_WETRANSFER: true
-  UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
-  UPLOAD_ZZNAS: false
-  ftp_username: ${{ secrets.FTP_USERNAME }}
-  ftp_psw: ${{ secrets.FTP_PSW }}
-  ftp_ip: ${{ secrets.FTP_IP }}
-  TargetPath: OpenwrtImgs/packages/luci-app-pushbotx
-  upload_file: luci-app-pushbotx_*
-  whkey: ${{ secrets.WEBHOOK }}
 
 jobs:
   build:
+    strategy:
+      matrix:
+        target:
+          - name: x86_64
+            sdk_url: https://downloads.openwrt.org/releases/23.05.5/targets/x86/64/openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+            arch: x86_64
+          - name: aarch64_generic
+            sdk_url: https://downloads.openwrt.org/releases/23.05.5/targets/armsr/armv8/openwrt-sdk-23.05.5-armsr-armv8_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+            arch: aarch64
+
     runs-on: ubuntu-latest
+    name: build-${{ matrix.target.name }}
 
     steps:
     - name: Checkout
@@ -42,51 +36,48 @@ jobs:
       run: |
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
         sudo -E apt-get -qq update
-        sudo -E apt-get -qq install $(curl -fsSL git.io/depends-ubuntu-2004)
+        sudo -E apt-get -qq install build-essential ccache ecj fastjar file g++ gawk \
+          gettext git java-propose-classpath libelf-dev libncurses5-dev \
+          libncursesw5-dev libssl-dev python3 python3-distutils python3-minimal \
+          python3-setuptools rsync swig time unzip wget zlib1g-dev
         sudo -E apt-get -qq autoremove --purge
         sudo -E apt-get -qq clean
         sudo timedatectl set-timezone "$TZ"
-        sudo mkdir -p /workdir
-        sudo chown $USER:$GROUPS /workdir
 
-    - name: Clone source code
+    - name: Download SDK
       working-directory: /workdir
       run: |
-        df -hT $PWD
-        wget $SDK_URL
-        mkdir /workdir/openwrt
+        sudo mkdir -p /workdir
+        sudo chown $USER:$GROUPS /workdir
+        wget -q ${{ matrix.target.sdk_url }}
+        mkdir -p /workdir/openwrt
         tar xf openwrt-sdk-* -C /workdir/openwrt --strip-components 1
-        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
-    - name: Update feeds
-      run: cd openwrt && ./scripts/feeds update -a
+    - name: Update & Install feeds
+      working-directory: /workdir/openwrt
+      run: |
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
 
-    - name: Install feeds
-      run: cd openwrt && ./scripts/feeds install -a
-      
     - name: Load custom configuration
       run: |
-        cd openwrt
-        git clone $PackageSource_URL package/$PackageName
-        git clone $BandixBackend_URL package/bandix
+        cd /workdir/openwrt
+        # Copy plugin source (checked out by actions/checkout)
+        cp -r $GITHUB_WORKSPACE package/luci-app-pushbotx
+        # Clone bandix backend
+        git clone https://github.com/timsaya/openwrt-bandix.git package/bandix
+        # Enable plugins in config
         make defconfig
-        echo "CONFIG_PACKAGE_$PackageName=y" >> ./.config
+        echo "CONFIG_PACKAGE_luci-app-pushbotx=y" >> ./.config
         echo "CONFIG_PACKAGE_bandix=y" >> ./.config
-
-    - name: SSH connection to Actions
-      uses: P3TERX/ssh2actions@v1.0.0
-      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
-      env:
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
 
     - name: Compile the package
       id: compile
       run: |
-        cd openwrt
+        cd /workdir/openwrt
         echo -e "$(nproc) thread compile"
-        make package/$PackageName/compile V=s
-        echo "::set-output name=status::success"
+        make package/luci-app-pushbotx/compile V=s
+        echo "status=success" >> $GITHUB_OUTPUT
 
     - name: Check space usage
       if: (!cancelled())
@@ -94,68 +85,16 @@ jobs:
 
     - name: Organize files
       id: organize
-      if: env.UPLOAD_Package == 'true' && !cancelled()
+      if: steps.compile.outputs.status == 'success' && !cancelled()
       run: |
-        cd openwrt/bin/packages/*/base
-        echo "PackagePath=$PWD" >> $GITHUB_ENV
-        echo "::set-output name=status::success"
+        ls /workdir/openwrt/bin/packages/*/base/*.ipk 2>/dev/null || true
+        mkdir -p /tmp/artifacts
+        cp /workdir/openwrt/bin/packages/*/base/*.ipk /tmp/artifacts/ 2>/dev/null || true
+        echo "status=success" >> $GITHUB_OUTPUT
 
-    - name: Upload package
-      uses: actions/upload-artifact@main
+    - name: Upload package to artifact
       if: steps.organize.outputs.status == 'success' && !cancelled()
+      uses: actions/upload-artifact@main
       with:
-        name: ${{ env.upload_file }}
-        path: ${{ env.PackagePath }}
-
-    - name: Upload package to cowtransfer
-      id: cowtransfer
-      if: steps.organize.outputs.status == 'success' && env.UPLOAD_COWTRANSFER == 'true' && !cancelled()
-      run: |
-        curl -fsSL git.io/file-transfer | sh
-        ./transfer cow --block 2621440 -s -p 64 --no-progress ${PackagePath}/${upload_file} 2>&1 | tee cowtransfer.log
-        echo "::warning file=cowtransfer.com::$(cat cowtransfer.log | grep https)"
-        echo "::set-output name=url::$(cat cowtransfer.log | grep https | cut -f3 -d" ")"
-
-    - name: Upload firmware to WeTransfer
-      id: wetransfer
-      if: steps.organize.outputs.status == 'success' && env.UPLOAD_WETRANSFER == 'true' && !cancelled()
-      run: |
-        curl -fsSL git.io/file-transfer | sh
-        ./transfer wet -s -p 16 --no-progress ${PackagePath}/${upload_file} 2>&1 | tee wetransfer.log
-        echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
-        echo "::set-output name=url::$(cat wetransfer.log | grep https | cut -f3 -d" ")"
-
-    - name: Upload firmware to my NAS
-      id: zz-nas
-      if: steps.organize.outputs.status == 'success' && env.UPLOAD_ZZNAS == 'true' && !cancelled()
-      run: |
-        cd openwrt/bin/packages/*/base
-        echo $ftp_psw > /tmp/rsync.psw && chmod 600 /tmp/rsync.psw
-        rsync -avrzP $upload_file_1 $ftp_username@$ftp_ip::$TargetPath/$(date +"%Y.%m.%d-%H%M")/ --password-file=/tmp/rsync.psw
-        echo "::warning file=zz-nas.com::All Released Files Uploaded to ZZ-NAS"
-
-    - name: Generate release tag
-      id: tag
-      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
-      run: |
-        echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")"
-        touch release.txt
-        [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer](${{ steps.cowtransfer.outputs.url }})" >> release.txt
-        [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer](${{ steps.wetransfer.outputs.url }})" >> release.txt
-        echo "::set-output name=status::success"
-
-    - name: Upload package to release
-      uses: softprops/action-gh-release@v1
-      if: steps.tag.outputs.status == 'success' && !cancelled()
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.tag.outputs.release_tag }}
-        body_path: release.txt
-        files: ${{ env.PackagePath }}/${{ env.upload_file }}
-
-    - name: Delete workflow runs
-      uses: GitRML/delete-workflow-runs@main
-      with:
-        retain_days: 1
-        keep_minimum_runs: 3
+        name: luci-app-pushbotx-${{ matrix.target.arch }}
+        path: /tmp/artifacts/
