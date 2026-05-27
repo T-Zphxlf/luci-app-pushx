@@ -43,6 +43,7 @@ jobs:
         wget $SDK_URL
         mkdir /workdir/openwrt
         tar xf openwrt-sdk-* -C /workdir/openwrt --strip-components 1
+        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
     - name: Update feeds
       run: cd openwrt && ./scripts/feeds update -a
