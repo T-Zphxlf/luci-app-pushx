@@ -9,22 +9,15 @@ on:
       - master
 
 env:
+  SDK_URL: https://downloads.openwrt.org/releases/23.05.5/targets/x86/64/openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+  PackageName: luci-app-pushbotx
+  PackageSource_URL: https://github.com/T-Zphxlf/luci-app-pushbotx
+  BandixBackend_URL: https://github.com/timsaya/openwrt-bandix
   TZ: Asia/Shanghai
 
 jobs:
   build:
-    strategy:
-      matrix:
-        target:
-          - name: x86_64
-            sdk_url: https://downloads.openwrt.org/releases/23.05.5/targets/x86/64/openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-            arch: x86_64
-          - name: aarch64_generic
-            sdk_url: https://downloads.openwrt.org/releases/23.05.5/targets/armsr/armv8/openwrt-sdk-23.05.5-armsr-armv8_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-            arch: aarch64
-
     runs-on: ubuntu-latest
-    name: build-${{ matrix.target.name }}
 
     steps:
     - name: Checkout
@@ -36,47 +29,42 @@ jobs:
       run: |
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
         sudo -E apt-get -qq update
-        sudo -E apt-get -qq install build-essential ccache ecj fastjar file g++ gawk \
-          gettext git java-propose-classpath libelf-dev libncurses5-dev \
-          libncursesw5-dev libssl-dev python3 python3-distutils python3-minimal \
-          python3-setuptools rsync swig time unzip wget zlib1g-dev
+        sudo -E apt-get -qq install $(curl -fsSL git.io/depends-ubuntu-2004)
         sudo -E apt-get -qq autoremove --purge
         sudo -E apt-get -qq clean
         sudo timedatectl set-timezone "$TZ"
-
-    - name: Download SDK
-      working-directory: /workdir
-      run: |
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
-        wget -q ${{ matrix.target.sdk_url }}
-        mkdir -p /workdir/openwrt
+
+    - name: Clone source code
+      working-directory: /workdir
+      run: |
+        df -hT $PWD
+        wget $SDK_URL
+        mkdir /workdir/openwrt
         tar xf openwrt-sdk-* -C /workdir/openwrt --strip-components 1
 
-    - name: Update & Install feeds
-      working-directory: /workdir/openwrt
-      run: |
-        ./scripts/feeds update -a
-        ./scripts/feeds install -a
+    - name: Update feeds
+      run: cd openwrt && ./scripts/feeds update -a
+
+    - name: Install feeds
+      run: cd openwrt && ./scripts/feeds install -a
 
     - name: Load custom configuration
       run: |
-        cd /workdir/openwrt
-        # Copy plugin source (checked out by actions/checkout)
-        cp -r $GITHUB_WORKSPACE package/luci-app-pushbotx
-        # Clone bandix backend
-        git clone https://github.com/timsaya/openwrt-bandix.git package/bandix
-        # Enable plugins in config
+        cd openwrt
+        git clone $PackageSource_URL package/$PackageName
+        git clone $BandixBackend_URL package/bandix
         make defconfig
-        echo "CONFIG_PACKAGE_luci-app-pushbotx=y" >> ./.config
+        echo "CONFIG_PACKAGE_$PackageName=y" >> ./.config
         echo "CONFIG_PACKAGE_bandix=y" >> ./.config
 
     - name: Compile the package
       id: compile
       run: |
-        cd /workdir/openwrt
+        cd openwrt
         echo -e "$(nproc) thread compile"
-        make package/luci-app-pushbotx/compile V=s
+        make package/$PackageName/compile V=s
         echo "status=success" >> $GITHUB_OUTPUT
 
     - name: Check space usage
@@ -87,14 +75,14 @@ jobs:
       id: organize
       if: steps.compile.outputs.status == 'success' && !cancelled()
       run: |
-        ls /workdir/openwrt/bin/packages/*/base/*.ipk 2>/dev/null || true
-        mkdir -p /tmp/artifacts
-        cp /workdir/openwrt/bin/packages/*/base/*.ipk /tmp/artifacts/ 2>/dev/null || true
+        cd openwrt/bin/packages/*/base
+        ls *.ipk 2>/dev/null || true
+        echo "PackagePath=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
 
     - name: Upload package to artifact
       if: steps.organize.outputs.status == 'success' && !cancelled()
       uses: actions/upload-artifact@main
       with:
-        name: luci-app-pushbotx-${{ matrix.target.arch }}
-        path: /tmp/artifacts/
+        name: ${{ env.PackageName }}
+        path: ${{ env.PackagePath }}
