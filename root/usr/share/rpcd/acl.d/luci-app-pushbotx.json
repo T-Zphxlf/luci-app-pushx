@@ -1,0 +1,11 @@
+{
+	"luci-app-pushbotx": {
+		"description": "Grant UCI access for luci-app-pushbotx",
+		"read": {
+			"uci": [ "pushbotx" ]
+		},
+		"write": {
+			"uci": [ "pushbotx" ]
+		}
+	}
+}
