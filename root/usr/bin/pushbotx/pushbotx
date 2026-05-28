@@ -27,7 +27,7 @@ function read_config(){
 	tempjsonpath="/tmp/pushbotx/temp.json"
 	ip_blacklist_path="/usr/bin/pushbotx/api/ip_blacklist"
 	[ ! -z "$oui_dir" ] && [ "$oui_dir" -eq "1" ] && oui_base="${dir}oui_base.txt" || oui_base="/usr/bin/pushbotx/oui_base.txt"
-	debuglevel=`echo "$debuglevel"` && [ -z "$debuglevel" ] && logfile="/dev/null" || logfile="${dir}pushbotx.log"
+	debuglevel=`echo "$debuglevel"` && logfile="${dir}pushbotx.log"
 	pushbotx_blacklist=`echo "$pushbotx_blacklist"|sed 's/ /\n/g'` 2>/dev/null
 	pushbotx_whitelist=`echo "$pushbotx_whitelist"|sed 's/ /\n/g'` 2>/dev/null
 	device_aliases=`echo "$device_aliases"|sed 's/ /\n/g'|sed 's/-/ /'` 2>/dev/null
