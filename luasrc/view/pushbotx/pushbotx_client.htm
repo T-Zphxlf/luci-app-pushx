@@ -1,17 +1,3 @@
-<%
-local dsp = require "luci.dispatcher"
--%>
-
-<script type="text/javascript">
-	//<![CDATA[
-	XHR.poll(10, '<%=dsp.build_url("admin/services/pushbotx/client")%>', null,
-		function(x, data) {
-			location.reload();
-		}
-	);
-	//]]>
-</script>
-
 <h2><%:在线设备列表%></h2>
 <div class="table" id="traffic">
 	<div class="tr table-titles">
