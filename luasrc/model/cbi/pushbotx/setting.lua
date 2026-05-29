@@ -152,7 +152,7 @@ a.inputtitle=translate("发送")
 a.inputstyle = "apply"
 function a.write(self, section)
 	luci.sys.call("cbi.apply")
-	luci.sys.call("/usr/bin/pushbotx/pushbotx test &")
+	luci.sys.call("sh /usr/bin/pushbotx/pushbotx test &")
 end
 
 a=s:taboption("basic", Value,"device_name",translate('本设备名称'))
@@ -465,7 +465,7 @@ e:depends("crontab","2")
 e.inputstyle = "apply"
 function e.write(self, section)
 luci.sys.call("cbi.apply")
-        luci.sys.call("/usr/bin/pushbotx/pushbotx send &")
+        luci.sys.call("sh /usr/bin/pushbotx/pushbotx send &")
 end
 
 --免打扰

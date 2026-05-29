@@ -4,11 +4,12 @@ START=99
 STOP=10
 
 start() {
+	chmod +x /usr/bin/pushbotx/pushbotx 2>/dev/null
 	state=`pgrep -f "/usr/bin/pushbotx/pushbotx"`
 	if [ ! -z "$state" ]; then
 		restart
 	else
-		/usr/bin/pushbotx/pushbotx &
+		sh /usr/bin/pushbotx/pushbotx &
 	fi
 	echo "pushbotx is starting now ..."
 }

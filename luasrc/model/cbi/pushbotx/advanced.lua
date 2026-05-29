@@ -49,7 +49,7 @@ a:depends({soc_code="pve"})
 a=s:option(Button,"soc",translate("测试温度命令"))
 a.inputtitle = translate("输出信息")
 a.write = function()
-	luci.sys.call("/usr/bin/pushbotx/pushbotx soc")
+	luci.sys.call("sh /usr/bin/pushbotx/pushbotx soc")
 	luci.http.redirect(luci.dispatcher.build_url("admin","services","pushbotx","advanced"))
 end
 
