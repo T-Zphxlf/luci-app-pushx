@@ -19,12 +19,12 @@ endef
 
 define Package/$(PKG_NAME)/postinst
 #!/bin/sh
-# 确保执行权限
-chmod +x /usr/bin/pushbotx/pushbotx 2>/dev/null
-# 创建临时目录
-mkdir -p /tmp/pushbotx 2>/dev/null
-# 注册开机自启
-/etc/init.d/pushbotx enable 2>/dev/null
+if [ -z "$${IPKG_INSTROOT}" ]; then
+	chmod +x /usr/bin/pushbotx/pushbotx 2>/dev/null
+	mkdir -p /tmp/pushbotx 2>/dev/null
+	/etc/init.d/pushbotx enable 2>/dev/null
+	/etc/init.d/pushbotx start 2>/dev/null
+fi
 exit 0
 endef
 

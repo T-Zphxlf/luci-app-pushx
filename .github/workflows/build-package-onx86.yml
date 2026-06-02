@@ -77,8 +77,10 @@ jobs:
       if: steps.compile.outputs.status == 'success' && !cancelled()
       run: |
         cd openwrt/bin/packages/*/base
-        ls *.ipk 2>/dev/null || true
-        echo "PackagePath=$PWD" >> $GITHUB_ENV
+        mkdir -p /tmp/artifacts
+        cp luci-app-pushbotx*.ipk /tmp/artifacts/ 2>/dev/null || true
+        cp bandix*.ipk /tmp/artifacts/ 2>/dev/null || true
+        ls /tmp/artifacts/*.ipk
         echo "status=success" >> $GITHUB_OUTPUT
 
     - name: Upload package to artifact
@@ -86,4 +88,4 @@ jobs:
       uses: actions/upload-artifact@main
       with:
         name: ${{ env.PackageName }}
-        path: ${{ env.PackagePath }}
+        path: /tmp/artifacts/
