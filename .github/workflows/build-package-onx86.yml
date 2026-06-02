@@ -12,7 +12,6 @@ env:
   SDK_URL: https://downloads.openwrt.org/releases/23.05.5/targets/x86/64/openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
   PackageName: luci-app-pushbotx
   PackageSource_URL: https://github.com/T-Zphxlf/luci-app-pushbotx
-  BandixBackend_URL: https://github.com/timsaya/openwrt-bandix
   TZ: Asia/Shanghai
 
 jobs:
@@ -45,20 +44,21 @@ jobs:
         tar xf openwrt-sdk-* -C /workdir/openwrt --strip-components 1
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
-    - name: Update feeds
-      run: cd openwrt && ./scripts/feeds update -a
-
-    - name: Install feeds
-      run: cd openwrt && ./scripts/feeds install -a
+    - name: Update & Install feeds
+      run: cd openwrt && ./scripts/feeds update -a && ./scripts/feeds install -a
 
     - name: Load custom configuration
       run: |
         cd openwrt
         git clone $PackageSource_URL package/$PackageName
-        git clone $BandixBackend_URL package/bandix
         make defconfig
         echo "CONFIG_PACKAGE_$PackageName=y" >> ./.config
-        echo "CONFIG_PACKAGE_bandix=y" >> ./.config
+
+    - name: Fix execute permissions
+      run: |
+        chmod +x openwrt/package/$PackageName/root/usr/bin/pushbotx/pushbotx
+        chmod +x openwrt/package/$PackageName/root/etc/init.d/pushbotx
+        chmod +x openwrt/package/$PackageName/root/etc/uci-defaults/luci-pushbotx
 
     - name: Compile the package
       id: compile
@@ -79,7 +79,6 @@ jobs:
         cd openwrt/bin/packages/*/base
         mkdir -p /tmp/artifacts
         cp luci-app-pushbotx*.ipk /tmp/artifacts/ 2>/dev/null || true
-        cp bandix*.ipk /tmp/artifacts/ 2>/dev/null || true
         ls /tmp/artifacts/*.ipk
         echo "status=success" >> $GITHUB_OUTPUT
 

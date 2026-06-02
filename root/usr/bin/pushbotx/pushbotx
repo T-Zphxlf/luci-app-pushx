@@ -1,9 +1,5 @@
 #!/bin/sh
 
-# 自修复：确保执行权限和临时目录
-chmod +x /usr/bin/pushbotx/pushbotx 2>/dev/null
-mkdir -p /tmp/pushbotx 2>/dev/null
-
 # 读取设置文件
 function get_config(){
 	while [[ "$*" != "" ]]; do

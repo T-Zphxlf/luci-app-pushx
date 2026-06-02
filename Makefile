@@ -17,17 +17,6 @@ define Package/$(PKG_NAME)/conffiles
 /usr/bin/pushbotx/api/ipv6.list
 endef
 
-define Package/$(PKG_NAME)/postinst
-#!/bin/sh
-if [ -z "$${IPKG_INSTROOT}" ]; then
-	chmod +x /usr/bin/pushbotx/pushbotx 2>/dev/null
-	mkdir -p /tmp/pushbotx 2>/dev/null
-	/etc/init.d/pushbotx enable 2>/dev/null
-	/etc/init.d/pushbotx start 2>/dev/null
-fi
-exit 0
-endef
-
 include $(TOPDIR)/feeds/luci/luci.mk
 
 # call BuildPackage - OpenWrt buildroot signature

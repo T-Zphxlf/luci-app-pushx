@@ -7,14 +7,5 @@ uci -q batch <<-EOF >/dev/null
 	commit ucitrack
 EOF
 
-# 确保脚本可执行
-chmod +x /usr/bin/pushbotx/pushbotx 2>/dev/null
-
-# 创建临时目录
-mkdir -p /tmp/pushbotx
-
-# 注册开机自启
-/etc/init.d/pushbotx enable 2>/dev/null
-
 rm -rf /tmp/luci-*
 exit 0
