@@ -1,4 +1,4 @@
-
+﻿
 local nt = require "luci.sys".net
 local fs=require"nixio.fs"
 local e=luci.model.uci.cursor()
@@ -6,16 +6,16 @@ local net = require "luci.model.network".init()
 local sys = require "luci.sys"
 local ifaces = sys.net:devices()
 
-m=Map("pushbotx",translate("PushBot"),
-translate("「全能推送」，英文名「PushBot」，是一款从服务器推送报警信息和日志到各平台的工具。<br>支持钉钉推送，企业微信推送，PushPlus推送。<br>本插件由tty228/luci-app-serverchan创建，然后七年修改为全能推送自用。<br /><br />如果你在使用中遇到问题，请到这里提交：")
-.. [[<a href="https://github.com/T-Zphxlf/luci-app-pushbotx" target="_blank">]]
+m=Map("pushx",translate("PushX"),
+translate("「推送X」，英文名「PushX」，是一款从服务器推送报警信息和日志到各平台的工具。<br>支持钉钉推送，企业微信推送，PushPlus推送。<br>本插件由tty228/luci-app-serverchan创建，改编为推送X自用。<br /><br />如果你在使用中遇到问题，请到这里提交：")
+.. [[<a href="https://github.com/T-Zphxlf/luci-app-pushx" target="_blank">]]
 .. translate("github 项目地址")
 .. [[</a>]]
 )
 
-m:section(SimpleSection).template  = "pushbotx/pushbotx_status"
+m:section(SimpleSection).template  = "pushx/pushx_status"
 
-s=m:section(NamedSection,"pushbotx","pushbotx",translate(""))
+s=m:section(NamedSection,"pushx","pushx",translate(""))
 s:tab("basic", translate("基本设置"))
 s:tab("content", translate("推送内容"))
 s:tab("crontab", translate("定时推送"))
@@ -24,7 +24,7 @@ s.addremove = false
 s.anonymous = true
 
 --基本设置
-a=s:taboption("basic", Flag,"pushbotx_enable",translate("启用"))
+a=s:taboption("basic", Flag,"pushx_enable",translate("启用"))
 a.default=0
 a.rmempty = true
 
@@ -39,31 +39,31 @@ a.optional = true
 
 --推送模式
 a=s:taboption("basic", ListValue,"jsonpath",translate("推送模式"))
-a.default="/usr/bin/pushbotx/api/dingding.json"
+a.default="/usr/bin/pushx/api/dingding.json"
 a.rmempty = true
-a:value("/usr/bin/pushbotx/api/dingding.json",translate("钉钉"))
-a:value("/usr/bin/pushbotx/api/ent_wechat.json",translate("企业微信"))
-a:value("/usr/bin/pushbotx/api/feishu.json",translate("飞书"))
-a:value("/usr/bin/pushbotx/api/bark.json",translate("Bark"))
-a:value("/usr/bin/pushbotx/api/pushplus.json",translate("PushPlus"))
-a:value("/usr/bin/pushbotx/api/pushdeer.json",translate("PushDeer"))
-a:value("/usr/bin/pushbotx/api/diy.json",translate("自定义推送"))
+a:value("/usr/bin/pushx/api/dingding.json",translate("钉钉"))
+a:value("/usr/bin/pushx/api/ent_wechat.json",translate("企业微信"))
+a:value("/usr/bin/pushx/api/feishu.json",translate("飞书"))
+a:value("/usr/bin/pushx/api/bark.json",translate("Bark"))
+a:value("/usr/bin/pushx/api/pushplus.json",translate("PushPlus"))
+a:value("/usr/bin/pushx/api/pushdeer.json",translate("PushDeer"))
+a:value("/usr/bin/pushx/api/diy.json",translate("自定义推送"))
 
 a=s:taboption("basic", Value,"dd_webhook",translate('Webhook'), translate("钉钉机器人 Webhook").."，只输入access_token=后面的即可<br>调用代码获取<a href='https://developers.dingtalk.com/document/robots/custom-robot-access' target='_blank'>点击这里</a><br><br>")
 a.rmempty = true
-a:depends("jsonpath","/usr/bin/pushbotx/api/dingding.json")
+a:depends("jsonpath","/usr/bin/pushx/api/dingding.json")
 
 a=s:taboption("basic", Value, "we_webhook", translate("Webhook"),translate("企业微信机器人 Webhook").."，只输入key=后面的即可<br>调用代码获取<a href='https://work.weixin.qq.com/api/doc/90000/90136/91770' target='_blank'>点击这里</a><br><br>")
 a.rmempty = true
-a:depends("jsonpath","/usr/bin/pushbotx/api/ent_wechat.json")
+a:depends("jsonpath","/usr/bin/pushx/api/ent_wechat.json")
 
 a=s:taboption("basic", Value,"pp_token",translate('PushPlus Token'), translate("PushPlus Token").."<br>调用代码获取<a href='http://pushplus.plus/doc/' target='_blank'>点击这里</a><br><br>")
 a.rmempty = true
-a:depends("jsonpath","/usr/bin/pushbotx/api/pushplus.json")
+a:depends("jsonpath","/usr/bin/pushx/api/pushplus.json")
 
 a=s:taboption("basic", ListValue,"pp_channel",translate('PushPlus Channel'))
 a.rmempty = true
-a:depends("jsonpath","/usr/bin/pushbotx/api/pushplus.json")
+a:depends("jsonpath","/usr/bin/pushx/api/pushplus.json")
 a:value("wechat",translate("wechat：PushPlus微信公众号"))
 a:value("cp",translate("cp：企业微信应用"))
 a:value("webhook",translate("webhook：第三方webhook"))
@@ -87,12 +87,12 @@ a:depends("pp_topic_enable","1")
 
 a=s:taboption("basic", Value,"pushdeer_key",translate('PushDeer Key'), translate("PushDeer Key").."<br>调用代码获取<a href='http://www.pushdeer.com/' target='_blank'>点击这里</a><br><br>")
 a.rmempty = true
-a:depends("jsonpath","/usr/bin/pushbotx/api/pushdeer.json")
+a:depends("jsonpath","/usr/bin/pushx/api/pushdeer.json")
 
 a=s:taboption("basic", Flag,"pushdeer_srv_enable",translate("自建 PushDeer 服务器"))
 a.default=0
 a.rmempty = true
-a:depends("jsonpath","/usr/bin/pushbotx/api/pushdeer.json")
+a:depends("jsonpath","/usr/bin/pushx/api/pushdeer.json")
 
 a=s:taboption("basic", Value,"pushdeer_srv",translate('PushDeer Server'), translate("PushDeer 自建服务器地址").."<br>如https://your.domain:port<br>具体自建服务器设定参见：<a href='http://www.pushdeer.com/selfhosted.html' target='_blank'>点击这里</a><br><br>")
 a.rmempty = true
@@ -100,16 +100,16 @@ a:depends("pushdeer_srv_enable","1")
 
 a=s:taboption("basic", Value,"fs_webhook",translate('WebHook'), translate("飞书 WebHook").."<br>调用代码获取<a href='https://www.feishu.cn/hc/zh-CN/articles/360024984973' target='_blank'>点击这里</a><br><br>")
 a.rmempty = true
-a:depends("jsonpath","/usr/bin/pushbotx/api/feishu.json")
+a:depends("jsonpath","/usr/bin/pushx/api/feishu.json")
 
 a=s:taboption("basic", Value,"bark_token",translate('Bark Token'), translate("Bark Token").."<br>调用代码获取<a href='https://github.com/Finb/Bark' target='_blank'>点击这里</a><br><br>")
 a.rmempty = true
-a:depends("jsonpath","/usr/bin/pushbotx/api/bark.json")
+a:depends("jsonpath","/usr/bin/pushx/api/bark.json")
 
 a=s:taboption("basic", Flag,"bark_srv_enable",translate("自建 Bark 服务器"))
 a.default=0
 a.rmempty = true
-a:depends("jsonpath","/usr/bin/pushbotx/api/bark.json")
+a:depends("jsonpath","/usr/bin/pushx/api/bark.json")
 
 a=s:taboption("basic", Value,"bark_srv",translate('Bark Server'), translate("Bark 自建服务器地址").."<br>如https://your.domain:port<br>具体自建服务器设定参见：<a href='https://github.com/Finb/Bark' target='_blank'>点击这里</a><br><br>")
 a.rmempty = true
@@ -118,12 +118,12 @@ a:depends("bark_srv_enable","1")
 a=s:taboption("basic", Value,"bark_sound",translate('Bark Sound'), translate("Bark 通知声音").."<br>如silence.caf<br>具体设定参见：<a href='https://github.com/Finb/Bark/tree/master/Sounds' target='_blank'>点击这里</a><br><br>")
 a.rmempty = true
 a.default = "silence.caf"
-a:depends("jsonpath","/usr/bin/pushbotx/api/bark.json")
+a:depends("jsonpath","/usr/bin/pushx/api/bark.json")
 
 a=s:taboption("basic", Flag,"bark_icon_enable",translate(" Bark 通知图标"))
 a.default=0
 a.rmempty = true
-a:depends("jsonpath","/usr/bin/pushbotx/api/bark.json")
+a:depends("jsonpath","/usr/bin/pushx/api/bark.json")
 
 a=s:taboption("basic", Value,"bark_icon",translate('Bark Icon'), translate("Bark 通知图标").."(仅 iOS15 或以上支持)<br>如http://day.app/assets/images/avatar.jpg<br>具体设定参见：<a href='https://github.com/Finb/Bark#%E5%85%B6%E4%BB%96%E5%8F%82%E6%95%B0' target='_blank'>点击这里</a><br><br>")
 a.rmempty = true
@@ -133,26 +133,26 @@ a:depends("bark_icon_enable","1")
 a=s:taboption("basic", Value,"bark_level",translate('Bark Level'), translate("Bark 时效性通知").."<br>可选参数值：<br/>active：不设置时的默认值，系统会立即亮屏显示通知。<br/>timeSensitive：时效性通知，可在专注状态下显示通知。<br/>passive：仅将通知添加到通知列表，不会亮屏提醒。")
 a.rmempty = true
 a.default = "active"
-a:depends("jsonpath","/usr/bin/pushbotx/api/bark.json")
+a:depends("jsonpath","/usr/bin/pushx/api/bark.json")
 
 a=s:taboption("basic", TextValue, "diy_json", translate("自定义推送"))
 a.optional = false
 a.rows = 28
 a.wrap = "soft"
 a.cfgvalue = function(self, section)
-    return fs.readfile("/usr/bin/pushbotx/api/diy.json")
+    return fs.readfile("/usr/bin/pushx/api/diy.json")
 end
 a.write = function(self, section, value)
-    fs.writefile("/usr/bin/pushbotx/api/diy.json", value:gsub("\r\n", "\n"))
+    fs.writefile("/usr/bin/pushx/api/diy.json", value:gsub("\r\n", "\n"))
 end
-a:depends("jsonpath","/usr/bin/pushbotx/api/diy.json")
+a:depends("jsonpath","/usr/bin/pushx/api/diy.json")
 
 a=s:taboption("basic", Button,"__add",translate("发送测试"))
 a.inputtitle=translate("发送")
 a.inputstyle = "apply"
 function a.write(self, section)
 	luci.sys.call("cbi.apply")
-	luci.sys.call("/usr/bin/pushbotx/pushbotx test &")
+	luci.sys.call("/usr/bin/pushx/pushx test &")
 end
 
 a=s:taboption("basic", Value,"device_name",translate('本设备名称'))
@@ -192,7 +192,7 @@ a.rmempty = true
 a.description = translate("<br/> 请输入设备 MAC 和设备别名，用“-”隔开，如：<br/> XX:XX:XX:XX:XX:XX-我的手机")
 
 --设备状态
-a=s:taboption("content", ListValue,"pushbotx_ipv4",translate("IPv4 变更通知"))
+a=s:taboption("content", ListValue,"pushx_ipv4",translate("IPv4 变更通知"))
 a.rmempty = true
 a.default=""
 a:value("",translate("关闭"))
@@ -201,7 +201,7 @@ a:value("2",translate("通过URL获取"))
 
 a = s:taboption("content", ListValue, "ipv4_interface", translate("接口名称"))
 a.rmempty = true
-a:depends({pushbotx_ipv4="1"})
+a:depends({pushx_ipv4="1"})
 for _, iface in ipairs(ifaces) do
 	if not (iface == "lo" or iface:match("^ifb.*")) then
 		local nets = net:get_interface(iface)
@@ -220,15 +220,15 @@ a.optional = false
 a.rows = 8
 a.wrap = "soft"
 a.cfgvalue = function(self, section)
-    return fs.readfile("/usr/bin/pushbotx/api/ipv4.list")
+    return fs.readfile("/usr/bin/pushx/api/ipv4.list")
 end
 a.write = function(self, section, value)
-    fs.writefile("/usr/bin/pushbotx/api/ipv4.list", value:gsub("\r\n", "\n"))
+    fs.writefile("/usr/bin/pushx/api/ipv4.list", value:gsub("\r\n", "\n"))
 end
 a.description = translate("<br/>会因服务器稳定性、连接频繁等原因导致获取失败<br/>如接口可以正常获取 IP，不推荐使用<br/>从以上列表中随机地址访问")
-a:depends({pushbotx_ipv4="2"})
+a:depends({pushx_ipv4="2"})
 
-a=s:taboption("content", ListValue,"pushbotx_ipv6",translate("IPv6 变更通知"))
+a=s:taboption("content", ListValue,"pushx_ipv6",translate("IPv6 变更通知"))
 a.rmempty = true
 a.default="disable"
 a:value("0",translate("关闭"))
@@ -237,7 +237,7 @@ a:value("2",translate("通过URL获取"))
 
 a = s:taboption("content", ListValue, "ipv6_interface", translate("接口名称"))
 a.rmempty = true
-a:depends({pushbotx_ipv6="1"})
+a:depends({pushx_ipv6="1"})
 for _, iface in ipairs(ifaces) do
 	if not (iface == "lo" or iface:match("^ifb.*")) then
 		local nets = net:get_interface(iface)
@@ -256,19 +256,19 @@ a.optional = false
 a.rows = 8
 a.wrap = "soft"
 a.cfgvalue = function(self, section)
-    return fs.readfile("/usr/bin/pushbotx/api/ipv6.list")
+    return fs.readfile("/usr/bin/pushx/api/ipv6.list")
 end
 a.write = function(self, section, value)
-    fs.writefile("/usr/bin/pushbotx/api/ipv6.list", value:gsub("\r\n", "\n"))
+    fs.writefile("/usr/bin/pushx/api/ipv6.list", value:gsub("\r\n", "\n"))
 end
 a.description = translate("<br/>会因服务器稳定性、连接频繁等原因导致获取失败<br/>如接口可以正常获取 IP，不推荐使用<br/>从以上列表中随机地址访问")
-a:depends({pushbotx_ipv6="2"})
+a:depends({pushx_ipv6="2"})
 
-a=s:taboption("content", Flag,"pushbotx_up",translate("设备上线通知"))
+a=s:taboption("content", Flag,"pushx_up",translate("设备上线通知"))
 a.default=1
 a.rmempty = true
 
-a=s:taboption("content", Flag,"pushbotx_down",translate("设备下线通知"))
+a=s:taboption("content", Flag,"pushx_down",translate("设备下线通知"))
 a.default=1
 a.rmempty = true
 
@@ -370,10 +370,10 @@ a.optional = false
 a.rows = 8
 a.wrap = "soft"
 a.cfgvalue = function(self, section)
-    return fs.readfile("/usr/bin/pushbotx/api/ip_blacklist")
+    return fs.readfile("/usr/bin/pushx/api/ip_blacklist")
 end
 a.write = function(self, section, value)
-    fs.writefile("/usr/bin/pushbotx/api/ip_blacklist", value:gsub("\r\n", "\n"))
+    fs.writefile("/usr/bin/pushx/api/ip_blacklist", value:gsub("\r\n", "\n"))
 end
 a:depends("web_login_black","1")
 
@@ -465,11 +465,11 @@ e:depends("crontab","2")
 e.inputstyle = "apply"
 function e.write(self, section)
 luci.sys.call("cbi.apply")
-        luci.sys.call("/usr/bin/pushbotx/pushbotx send &")
+        luci.sys.call("/usr/bin/pushx/pushx send &")
 end
 
 --免打扰
-a=s:taboption("disturb", ListValue,"pushbotx_sheep",translate("免打扰时段设置"),translate("在指定整点时间段内，暂停推送消息<br/>免打扰时间中，定时推送也会被阻止。"))
+a=s:taboption("disturb", ListValue,"pushx_sheep",translate("免打扰时段设置"),translate("在指定整点时间段内，暂停推送消息<br/>免打扰时间中，定时推送也会被阻止。"))
 a.rmempty = true
 
 a:value("",translate("关闭"))
@@ -484,8 +484,8 @@ a:value(t,translate("每天"..t.."点"))
 end
 a.default=0
 a.datatype=uinteger
-a:depends({pushbotx_sheep="1"})
-a:depends({pushbotx_sheep="2"})
+a:depends({pushx_sheep="1"})
+a:depends({pushx_sheep="2"})
 a=s:taboption("disturb", ListValue,"endtime",translate("免打扰结束时间"))
 a.rmempty = true
 
@@ -494,8 +494,8 @@ a:value(t,translate("每天"..t.."点"))
 end
 a.default=8
 a.datatype=uinteger
-a:depends({pushbotx_sheep="1"})
-a:depends({pushbotx_sheep="2"})
+a:depends({pushx_sheep="1"})
+a:depends({pushx_sheep="2"})
 
 a=s:taboption("disturb", ListValue,"macmechanism",translate("MAC过滤"))
 a:value("",translate("disable"))
@@ -505,19 +505,19 @@ a:value("interface",translate("仅通知此接口设备"))
 a.rmempty = true
 
 
-a = s:taboption("disturb", DynamicList, "pushbotx_whitelist", translate("忽略列表"))
+a = s:taboption("disturb", DynamicList, "pushx_whitelist", translate("忽略列表"))
 nt.mac_hints(function(mac, name) a :value(mac, "%s (%s)" %{ mac, name }) end)
 a.rmempty = true
 a:depends({macmechanism="allow"})
 a.description = translate("AA:AA:AA:AA:AA:AA\\|BB:BB:BB:BB:BB:B 可以将多个 MAC 视为同一用户<br/>任一设备在线后不再推送，设备全部离线时才会推送，避免双 wifi 频繁推送")
 
-a = s:taboption("disturb", DynamicList, "pushbotx_blacklist", translate("关注列表"))
+a = s:taboption("disturb", DynamicList, "pushx_blacklist", translate("关注列表"))
 nt.mac_hints(function(mac, name) a:value(mac, "%s (%s)" %{ mac, name }) end)
 a.rmempty = true
 a:depends({macmechanism="block"})
 a.description = translate("AA:AA:AA:AA:AA:AA\\|BB:BB:BB:BB:BB:B 可以将多个 MAC 视为同一用户<br/>任一设备在线后不再推送，设备全部离线时才会推送，避免双 wifi 频繁推送")
 
-a = s:taboption("disturb", ListValue, "pushbotx_interface", translate("接口名称"))
+a = s:taboption("disturb", ListValue, "pushx_interface", translate("接口名称"))
 a:depends({macmechanism="interface"})
 a.rmempty = true
 

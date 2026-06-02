@@ -1,8 +1,17 @@
-name: Build luci-app-pushbotx
+name: Build luci-app-PushX
 
 on:
   repository_dispatch:
   workflow_dispatch:
+    inputs:
+      version:
+        description: '发布版本号（留空不发布 Release）'
+        required: false
+        default: ''
+      release_notes:
+        description: '发布说明'
+        required: false
+        default: ''
   push:
     branches:
       - main
@@ -10,7 +19,7 @@ on:
 
 env:
   SDK_URL: https://downloads.openwrt.org/releases/23.05.5/targets/x86/64/openwrt-sdk-23.05.5-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-  PackageName: luci-app-pushbotx
+  PackageName: luci-app-PushX
   PackageSource_URL: https://github.com/T-Zphxlf/luci-app-pushbotx
   TZ: Asia/Shanghai
 
@@ -50,15 +59,15 @@ jobs:
     - name: Load custom configuration
       run: |
         cd openwrt
-        git clone $PackageSource_URL package/$PackageName
+        cp -r $GITHUB_WORKSPACE package/$PackageName
         make defconfig
         echo "CONFIG_PACKAGE_$PackageName=y" >> ./.config
 
     - name: Fix execute permissions
       run: |
-        chmod +x openwrt/package/$PackageName/root/usr/bin/pushbotx/pushbotx
-        chmod +x openwrt/package/$PackageName/root/etc/init.d/pushbotx
-        chmod +x openwrt/package/$PackageName/root/etc/uci-defaults/luci-pushbotx
+        chmod +x openwrt/package/$PackageName/root/usr/bin/pushx/pushx
+        chmod +x openwrt/package/$PackageName/root/etc/init.d/pushx
+        chmod +x openwrt/package/$PackageName/root/etc/uci-defaults/luci-pushx
 
     - name: Compile the package
       id: compile
@@ -78,7 +87,8 @@ jobs:
       run: |
         cd openwrt/bin/packages/*/base
         mkdir -p /tmp/artifacts
-        cp luci-app-pushbotx*.ipk /tmp/artifacts/ 2>/dev/null || true
+        cp luci-app-pushx*.ipk /tmp/artifacts/ 2>/dev/null || true
+        cp luci-app-PushX*.ipk /tmp/artifacts/ 2>/dev/null || true
         ls /tmp/artifacts/*.ipk
         echo "status=success" >> $GITHUB_OUTPUT
 
@@ -88,3 +98,12 @@ jobs:
       with:
         name: ${{ env.PackageName }}
         path: /tmp/artifacts/
+
+    - name: Create Release
+      if: steps.organize.outputs.status == 'success' && github.event.inputs.version != ''
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.event.inputs.version }}
+        name: ${{ github.event.inputs.version }}
+        body: ${{ github.event.inputs.release_notes }}
+        files: /tmp/artifacts/*.ipk

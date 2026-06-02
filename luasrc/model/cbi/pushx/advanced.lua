@@ -1,10 +1,10 @@
-local nt = require "luci.sys".net
+﻿local nt = require "luci.sys".net
 local fs=require"nixio.fs"
 
-m=Map("pushbotx",translate("提示"),
+m=Map("pushx",translate("提示"),
 translate("如果你不了解这些选项的含义，请不要修改这些选项。"))
 
-s = m:section(TypedSection, "pushbotx", "高级设置")
+s = m:section(TypedSection, "pushx", "高级设置")
 s.anonymous = true
 s.addremove = false
 
@@ -49,16 +49,16 @@ a:depends({soc_code="pve"})
 a=s:option(Button,"soc",translate("测试温度命令"))
 a.inputtitle = translate("输出信息")
 a.write = function()
-	luci.sys.call("/usr/bin/pushbotx/pushbotx soc")
-	luci.http.redirect(luci.dispatcher.build_url("admin","services","pushbotx","advanced"))
+	luci.sys.call("/usr/bin/pushx/pushx soc")
+	luci.http.redirect(luci.dispatcher.build_url("admin","services","pushx","advanced"))
 end
 
-if nixio.fs.access("/tmp/pushbotx/soc_tmp") then
+if nixio.fs.access("/tmp/pushx/soc_tmp") then
 e=s:option(TextValue,"soc_tmp")
 e.rows=2
 e.readonly=true
 e.cfgvalue = function()
-	return luci.sys.exec("cat /tmp/pushbotx/soc_tmp && rm -f /tmp/pushbotx/soc_tmp")
+	return luci.sys.exec("cat /tmp/pushx/soc_tmp && rm -f /tmp/pushx/soc_tmp")
 end
 end
 
@@ -86,7 +86,7 @@ a:value("",translate("无操作"))
 a:value("1",translate("重启路由器"))
 a:value("2",translate("重新拨号"))
 a:value("3",translate("修改相关设置项，尝试自动修复网络"))
-a.description = translate("选项 1 选项 2 不会修改设置，并最多尝试 2 次。<br/>选项 3 会将设置项备份于 /usr/bin/pushbotx/configbak 目录，并在失败后还原。<br/>【！！无法保证兼容性！！】不熟悉系统设置项，不会救砖请勿使用")
+a.description = translate("选项 1 选项 2 不会修改设置，并最多尝试 2 次。<br/>选项 3 会将设置项备份于 /usr/bin/pushx/configbak 目录，并在失败后还原。<br/>【！！无法保证兼容性！！】不熟悉系统设置项，不会救砖请勿使用")
 
 a=s:option(ListValue,"system_time_event",translate("定时重启"))
 a.default=""

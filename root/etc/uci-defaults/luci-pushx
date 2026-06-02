@@ -1,0 +1,14 @@
+﻿#!/bin/sh
+
+uci -q batch <<-EOF >/dev/null
+	delete ucitrack.@pushx[-1]
+	add ucitrack pushx
+	set ucitrack.@pushx[-1].init=pushx
+	commit ucitrack
+EOF
+
+# 注册开机自启
+/etc/init.d/pushx enable 2>/dev/null
+
+rm -rf /tmp/luci-*
+exit 0
