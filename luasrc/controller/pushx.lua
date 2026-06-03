@@ -1,4 +1,4 @@
-﻿module("luci.controller.pushx",package.seeall)
+module("luci.controller.pushx",package.seeall)
 
 function index()
 	if not nixio.fs.access("/etc/config/pushx") then

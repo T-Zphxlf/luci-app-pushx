@@ -1,4 +1,4 @@
-﻿include $(TOPDIR)/rules.mk
+include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-PushX
 PKG_VERSION:=1.00

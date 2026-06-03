@@ -1,4 +1,4 @@
-﻿
+
 config pushx 'pushx'
 	option pushx_enable '0'
 	option sleeptime '60'

@@ -1,4 +1,4 @@
-﻿local nt = require "luci.sys".net
+local nt = require "luci.sys".net
 local fs=require"nixio.fs"
 
 m=Map("pushx",translate("提示"),

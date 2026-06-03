@@ -1,4 +1,4 @@
-﻿f = SimpleForm("pushx")
+f = SimpleForm("pushx")
 luci.sys.call("/usr/bin/pushx/pushx client")
 f.reset = false
 f.submit = false

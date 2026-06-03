@@ -1,4 +1,4 @@
-﻿
+
 local nt = require "luci.sys".net
 local fs=require"nixio.fs"
 local e=luci.model.uci.cursor()

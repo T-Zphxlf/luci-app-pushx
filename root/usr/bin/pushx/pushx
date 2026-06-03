@@ -1,4 +1,4 @@
-﻿#!/bin/sh
+#!/bin/sh
 
 # 读取设置文件
 function get_config(){
