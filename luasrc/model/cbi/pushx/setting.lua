@@ -7,7 +7,7 @@ local sys = require "luci.sys"
 local ifaces = sys.net:devices()
 
 m=Map("pushx",translate("PushX"),
-translate("「推送X」，英文名「PushX」，是一款从服务器推送报警信息和日志到各平台的工具。<br>支持钉钉推送，企业微信推送，PushPlus推送。<br>本插件由tty228/luci-app-serverchan创建，改编为推送X自用。<br /><br />如果你在使用中遇到问题，请到这里提交：")
+translate("「推送X」，英文名「PushX」，是一款从服务器推送报警信息和日志到各平台的工具。<br>支持钉钉推送，企业微信推送，PushPlus推送。<br>基于tty228/luci-app-serverchan修改，适配Bandix流量统计。<br /><br />如果你在使用中遇到问题，请到这里提交：")
 .. [[<a href="https://github.com/T-Zphxlf/luci-app-pushx" target="_blank">]]
 .. translate("github 项目地址")
 .. [[</a>]]
@@ -428,7 +428,7 @@ a.description = translate("<br/>从 00:00 开始，每 * 小时发送一次")
 a= s:taboption("crontab", Value, "send_title", translate("推送标题"))
 a:depends("crontab","1")
 a:depends("crontab","2")
-a.placeholder = "OpenWrt By tty228 路由状态："
+a.placeholder = "OpenWrt 路由状态："
 a.description = translate("<br/>使用特殊符号可能会造成发送失败")
 
 a=s:taboption("crontab", Flag,"router_status",translate("系统运行情况"))

@@ -4,7 +4,7 @@ PKG_NAME:=luci-app-PushX
 PKG_VERSION:=1.00
 PKG_RELEASE:=1
 
-PKG_MAINTAINER:=tty228 <tty228@yeah.net>  zzsj0928
+PKG_MAINTAINER:=T-Zphxlf
 
 LUCI_TITLE:=LuCI support for PushX (Bandix traffic)
 LUCI_PKGARCH:=all
