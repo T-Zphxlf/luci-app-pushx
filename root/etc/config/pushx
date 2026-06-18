@@ -1,0 +1,10 @@
+
+config pushx 'pushx'
+	option pushx_enable '0'
+	option sleeptime '60'
+	option pushx_ipv6 '0'
+	option pushx_up '1'
+	option pushx_down '1'
+	option cpuload_enable '1'
+	option cpuload '2'
+	option temperature_enable '0'
