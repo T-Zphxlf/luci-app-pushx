@@ -58,6 +58,16 @@ jobs:
     - name: Update & Install feeds
       run: cd openwrt && ./scripts/feeds update -a && ./scripts/feeds install -a
 
+    - name: Update package version
+      if: github.event.inputs.version != ''
+      run: |
+        cd $GITHUB_WORKSPACE
+        VERSION="${{ github.event.inputs.version }}"
+        echo "Updating PKG_VERSION to: $VERSION"
+        sed -i "s/^PKG_VERSION:=.*/PKG_VERSION:=$VERSION/" Makefile
+        echo "Makefile PKG_VERSION updated"
+        grep "PKG_VERSION" Makefile
+
     - name: Load custom configuration
       run: |
         cd openwrt
@@ -103,7 +113,7 @@ jobs:
 
     - name: Create Release
       if: steps.organize.outputs.status == 'success' && github.event.inputs.version != ''
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v2.2.2
       with:
         tag_name: ${{ github.event.inputs.version }}
         name: ${{ github.event.inputs.version }}
