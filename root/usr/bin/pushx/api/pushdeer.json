@@ -1,7 +1,5 @@
-{
-    "_api": "这是 PushDeer推送 api 文件",
+﻿{
     "_api": "【PushDeer推送】",
-    
     "url": "${pushdeer_srv}/message/push",
     "data": "@${tempjsonpath}",
     "content_type": "Content-Type:application/json",
@@ -17,6 +15,7 @@
     "font_red": "",
     "font_blue": "",
     "font_purple": "",
+    "font_yellow": "",
     "font_end": "",
     "font_end2": "",
     "percentsym": "",

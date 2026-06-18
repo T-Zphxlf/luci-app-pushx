@@ -1,10 +1,8 @@
-{
-    "_api": "这是Bark推送 post 模板信息 api 文件",
+﻿{
     "_api": "【Bark推送】",
-    
     "url": "${bark_srv}/push",
     "data": "@${tempjsonpath}",
-    "content_type": "Content-Type: application/json; charset=utf-8",
+    "content_type": "Content-Type:application/json; charset=utf-8",
     "str_title_start": "【",
     "str_title_end": "】",
     "str_linefeed": "\\n",
@@ -17,6 +15,7 @@
     "font_red": "",
     "font_blue": "",
     "font_purple": "",
+    "font_yellow": "",
     "font_end": "",
     "font_end2": "",
     "percentsym": "",
